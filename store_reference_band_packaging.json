@@ -1,0 +1,1330 @@
+{
+  "1": {
+    "avg": 440004.01,
+    "max": 750993.15,
+    "min": 114721.1,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "10": {
+    "avg": 347293.74,
+    "max": 689912.5,
+    "min": 121933.87,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "100": {
+    "avg": 276704.07,
+    "max": 647558.81,
+    "min": 117441.01,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "101": {
+    "avg": 50766.88,
+    "max": 97640,
+    "min": 5312,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "102": {
+    "avg": 158054.56,
+    "max": 207249.81,
+    "min": 86963.54,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "103": {
+    "avg": 138864.5,
+    "max": 231338.89,
+    "min": 57803.95,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "104": {
+    "avg": 144436.36,
+    "max": 270976.25,
+    "min": 83491.9,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "105": {
+    "avg": 163353.5,
+    "max": 206962.11,
+    "min": 118633.85,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "106": {
+    "avg": 140617.26,
+    "max": 214061.23,
+    "min": 98882.53,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "107": {
+    "avg": 217648.92,
+    "max": 347937.93,
+    "min": 46801.32,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "108": {
+    "avg": 195220.42,
+    "max": 489592.64,
+    "min": 73540.34,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "109": {
+    "avg": 275394.29,
+    "max": 396283.2,
+    "min": 179975.08,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "11": {
+    "avg": 295627.85,
+    "max": 445483.16,
+    "min": 189313.45,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "110": {
+    "avg": 230216.48,
+    "max": 377933.61,
+    "min": 107930.88,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "111": {
+    "avg": 134739.52,
+    "max": 197427.5,
+    "min": 60685.81,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "113": {
+    "avg": 103386.16,
+    "max": 202531.32,
+    "min": 39845.5,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "114": {
+    "avg": 121297.16,
+    "max": 198342.69,
+    "min": 90196.89,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "115": {
+    "avg": 287271.0,
+    "max": 512224.96,
+    "min": 107372.93,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "116": {
+    "avg": 258166.51,
+    "max": 393979.31,
+    "min": 130316.6,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "117": {
+    "avg": 137131.1,
+    "max": 168617.51,
+    "min": 103194.47,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "118": {
+    "avg": 147415.36,
+    "max": 222099.44,
+    "min": 74828.06,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "119": {
+    "avg": 131880.46,
+    "max": 194792.35,
+    "min": 85286.86,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "12": {
+    "avg": 278519.43,
+    "max": 383899.89,
+    "min": 168968.76,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "120": {
+    "avg": 178989.07,
+    "max": 251151.76,
+    "min": 124539.36,
+    "months": 14,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "121": {
+    "avg": 105786.76,
+    "max": 174222.82,
+    "min": 85139.77,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "122": {
+    "avg": 131510.91,
+    "max": 220250.81,
+    "min": 21430.92,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "123": {
+    "avg": 218366.98,
+    "max": 389329.63,
+    "min": 154949.66,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "124": {
+    "avg": 180228.66,
+    "max": 293268.85,
+    "min": 108434.3,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "125": {
+    "avg": 41847.19,
+    "max": 107885.68,
+    "min": 8524.5,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "126": {
+    "avg": 100263.48,
+    "max": 140584.52,
+    "min": 77536.27,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "127": {
+    "avg": 228817.02,
+    "max": 376570.32,
+    "min": 139258.6,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "128": {
+    "avg": 63240.53,
+    "max": 131337.37,
+    "min": 19230.14,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "129": {
+    "avg": 141800.98,
+    "max": 267071.21,
+    "min": 44706.43,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "13": {
+    "avg": 349897.95,
+    "max": 692533.78,
+    "min": 90279.5,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "130": {
+    "avg": 73252.61,
+    "max": 126092.62,
+    "min": 32654.26,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "131": {
+    "avg": 217588.26,
+    "max": 528276.18,
+    "min": 103833,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "132": {
+    "avg": 242404.07,
+    "max": 361102.36,
+    "min": 181083.26,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "133": {
+    "avg": 165779.73,
+    "max": 359472.97,
+    "min": 84023.16,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "134": {
+    "avg": 94216.06,
+    "max": 140954.23,
+    "min": 68381.43,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "135": {
+    "avg": 73896.47,
+    "max": 179378.72,
+    "min": 4947.13,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "136": {
+    "avg": 199275.15,
+    "max": 277388.17,
+    "min": 151388.77,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "137": {
+    "avg": 141251.82,
+    "max": 928323,
+    "min": 37419.42,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "138": {
+    "avg": 134485.55,
+    "max": 207018.93,
+    "min": 70512.69,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "139": {
+    "avg": 266151.65,
+    "max": 391428.4,
+    "min": 181210.6,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "14": {
+    "avg": 276772.57,
+    "max": 584819.74,
+    "min": 40825.27,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "140": {
+    "avg": 74857.22,
+    "max": 119960.88,
+    "min": 26812.84,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "141": {
+    "avg": 119714.4,
+    "max": 166201.47,
+    "min": 53112.59,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "142": {
+    "avg": 95102.74,
+    "max": 155683.1,
+    "min": 59550.91,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "143": {
+    "avg": 130493.65,
+    "max": 336363.62,
+    "min": 46942.92,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "144": {
+    "avg": 97726.35,
+    "max": 168894.16,
+    "min": 53030.62,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "145": {
+    "avg": 163933.92,
+    "max": 262383.16,
+    "min": 95521.89,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "146": {
+    "avg": 132295.13,
+    "max": 219499.88,
+    "min": 94908.16,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "147": {
+    "avg": 159767.21,
+    "max": 257107.76,
+    "min": 98851.02,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "148": {
+    "avg": 97839.57,
+    "max": 199229.05,
+    "min": 49898.71,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "149": {
+    "avg": 99661.84,
+    "max": 164781,
+    "min": 63252.38,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "15": {
+    "avg": 376989.15,
+    "max": 531454.62,
+    "min": 286334.11,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "150": {
+    "avg": 111669.51,
+    "max": 180849.58,
+    "min": 84114.21,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "151": {
+    "avg": 202839.79,
+    "max": 406040.05,
+    "min": 60188.21,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "152": {
+    "avg": 117295.3,
+    "max": 191519.55,
+    "min": 57896.46,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "153": {
+    "avg": 151201.81,
+    "max": 233898.57,
+    "min": 111901.4,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "154": {
+    "avg": 141453.54,
+    "max": 182124.73,
+    "min": 88606.72,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "155": {
+    "avg": 180307.37,
+    "max": 281555.12,
+    "min": 132688.81,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "156": {
+    "avg": 181873.4,
+    "max": 458415.91,
+    "min": 59548.74,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "157": {
+    "avg": 101521.91,
+    "max": 170522.75,
+    "min": 49686.44,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "158": {
+    "avg": 40831.5,
+    "max": 103186.11,
+    "min": 18613.62,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "159": {
+    "avg": 226332.45,
+    "max": 379327.81,
+    "min": 133609.87,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "16": {
+    "avg": 220335.69,
+    "max": 368630.72,
+    "min": 86091.93,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "160": {
+    "avg": 160086.62,
+    "max": 233648.15,
+    "min": 109645.14,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "161": {
+    "avg": 165882.06,
+    "max": 254520.18,
+    "min": 109378.08,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "162": {
+    "avg": 87961.86,
+    "max": 166250.98,
+    "min": 5082,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "163": {
+    "avg": 228843.53,
+    "max": 343970.19,
+    "min": 125426.34,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "164": {
+    "avg": 276032.68,
+    "max": 605711.77,
+    "min": 111377.08,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "165": {
+    "avg": 101590.83,
+    "max": 167211.49,
+    "min": 34208.01,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "166": {
+    "avg": 115948.66,
+    "max": 440732,
+    "min": 49122.29,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "167": {
+    "avg": 95388.55,
+    "max": 138857.87,
+    "min": 39330.56,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "168": {
+    "avg": 228569.57,
+    "max": 478000.79,
+    "min": 71063.5,
+    "months": 13,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "169": {
+    "avg": 83098.96,
+    "max": 142202.98,
+    "min": 18805.17,
+    "months": 11,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "17": {
+    "avg": 169047.79,
+    "max": 280036.43,
+    "min": 62074.5,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "170": {
+    "avg": 112450.37,
+    "max": 158450.39,
+    "min": 61737.0,
+    "months": 10,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "171": {
+    "avg": 93371.86,
+    "max": 218969.74,
+    "min": 33039.84,
+    "months": 10,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "172": {
+    "avg": 241074.29,
+    "max": 327594.1,
+    "min": 121665.95,
+    "months": 4,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "18": {
+    "avg": 525215.48,
+    "max": 1134869.7,
+    "min": 80173.27,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "19": {
+    "avg": 132644.45,
+    "max": 219370.59,
+    "min": 80092.06,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "2": {
+    "avg": 114128.71,
+    "max": 273391.38,
+    "min": 32082.7,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "20": {
+    "avg": 198601.39,
+    "max": 300291.3,
+    "min": 115479.02,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "21": {
+    "avg": 200676.47,
+    "max": 412428.53,
+    "min": 64906.27,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "22": {
+    "avg": 192487.71,
+    "max": 325467.99,
+    "min": 118192.1,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "23": {
+    "avg": 98449.61,
+    "max": 186986.39,
+    "min": 36064.46,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "24": {
+    "avg": 183211.18,
+    "max": 317865.44,
+    "min": 117625.16,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "25": {
+    "avg": 185950.31,
+    "max": 429973.15,
+    "min": 61212.5,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "26": {
+    "avg": 173285.29,
+    "max": 292955.94,
+    "min": 102614,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "27": {
+    "avg": 286464.32,
+    "max": 459366.79,
+    "min": 100999.28,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "28": {
+    "avg": 172680.7,
+    "max": 299691.29,
+    "min": 117084.39,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "29": {
+    "avg": 292652.59,
+    "max": 461104.51,
+    "min": 135934.73,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "3": {
+    "avg": 376224.11,
+    "max": 567610.14,
+    "min": 231750.9,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "30": {
+    "avg": 261164.0,
+    "max": 519618,
+    "min": 67557.25,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "301": {
+    "avg": 18266.6,
+    "max": 41819,
+    "min": 5174,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "303": {
+    "avg": 59056.85,
+    "max": 106099.98,
+    "min": 27296.8,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "31": {
+    "avg": 212125.48,
+    "max": 387159.74,
+    "min": 99923.9,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "32": {
+    "avg": 204137.39,
+    "max": 345943.85,
+    "min": 122719.56,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "33": {
+    "avg": 184648.42,
+    "max": 386555.26,
+    "min": 67038.76,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "34": {
+    "avg": 217761.17,
+    "max": 321096.68,
+    "min": 158018.61,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "35": {
+    "avg": 144712.32,
+    "max": 340268.93,
+    "min": 67812.98,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "350": {
+    "avg": 30457.6,
+    "max": 60945.09,
+    "min": 13165.64,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "351": {
+    "avg": 29498.34,
+    "max": 41653.5,
+    "min": 20865.88,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "352": {
+    "avg": 63038.94,
+    "max": 80952.94,
+    "min": 36228.41,
+    "months": 14,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "36": {
+    "avg": 110984.77,
+    "max": 213998.82,
+    "min": 44974.87,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "37": {
+    "avg": 191261.89,
+    "max": 386340.39,
+    "min": 62929.8,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "38": {
+    "avg": 175205.91,
+    "max": 300508.02,
+    "min": 97906.71,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "39": {
+    "avg": 103739.33,
+    "max": 149093.64,
+    "min": 77134.94,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "4": {
+    "avg": 229710.86,
+    "max": 490941.6,
+    "min": 27954.35,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "40": {
+    "avg": 123538.14,
+    "max": 352979.43,
+    "min": 77093.68,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "41": {
+    "avg": 258523.34,
+    "max": 502712.63,
+    "min": 160357.46,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "42": {
+    "avg": 343502.66,
+    "max": 485787.35,
+    "min": 205757.36,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "43": {
+    "avg": 111885.02,
+    "max": 187082,
+    "min": 35561.12,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "44": {
+    "avg": 317594.58,
+    "max": 569840,
+    "min": 127037.24,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "45": {
+    "avg": 233372.37,
+    "max": 460016.17,
+    "min": 159745.63,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "46": {
+    "avg": 122805.12,
+    "max": 273935.78,
+    "min": 48455.72,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "47": {
+    "avg": 190985.91,
+    "max": 303861.12,
+    "min": 136024.84,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "48": {
+    "avg": 172989.63,
+    "max": 275906.66,
+    "min": 90934.26,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "49": {
+    "avg": 182931.38,
+    "max": 318524.24,
+    "min": 116657,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "5": {
+    "avg": 334995.04,
+    "max": 422332.29,
+    "min": 241340.31,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "50": {
+    "avg": 314790.16,
+    "max": 514235.55,
+    "min": 237048.57,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "51": {
+    "avg": 201947.85,
+    "max": 416907.44,
+    "min": 106424.34,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "52": {
+    "avg": 167445.04,
+    "max": 342343.04,
+    "min": 78861.47,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "53": {
+    "avg": 132854.96,
+    "max": 206723.46,
+    "min": 82240.48,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "54": {
+    "avg": 267611.88,
+    "max": 366504.86,
+    "min": 144872.5,
+    "months": 14,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "55": {
+    "avg": 170943.41,
+    "max": 364408.62,
+    "min": 86239.72,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "56": {
+    "avg": 262122.11,
+    "max": 554773.97,
+    "min": 103353.38,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "57": {
+    "avg": 269173.84,
+    "max": 575650.5,
+    "min": 130465.75,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "58": {
+    "avg": 165043.26,
+    "max": 277202.43,
+    "min": 95462.3,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "59": {
+    "avg": 197461.76,
+    "max": 234644.93,
+    "min": 148712.74,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "6": {
+    "avg": 398228.36,
+    "max": 652295.06,
+    "min": 244148.84,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "60": {
+    "avg": 176257.38,
+    "max": 330301.1,
+    "min": 90424,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "61": {
+    "avg": 274731.74,
+    "max": 357952.61,
+    "min": 139546.52,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "62": {
+    "avg": 209163.1,
+    "max": 266825.04,
+    "min": 102695.98,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "63": {
+    "avg": 279061.52,
+    "max": 426221.63,
+    "min": 203726.05,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "64": {
+    "avg": 185005.86,
+    "max": 256180.46,
+    "min": 122248.88,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "65": {
+    "avg": 285109.58,
+    "max": 434190.24,
+    "min": 174089.42,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "66": {
+    "avg": 135264.58,
+    "max": 226151.52,
+    "min": 30112.61,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "67": {
+    "avg": 210132.32,
+    "max": 300650.13,
+    "min": 143995.21,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "68": {
+    "avg": 292577.47,
+    "max": 496652.44,
+    "min": 188042.87,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "69": {
+    "avg": 149663.49,
+    "max": 273529.12,
+    "min": 82324.25,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "7": {
+    "avg": 223296.65,
+    "max": 315636.38,
+    "min": 163414.17,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "70": {
+    "avg": 105542.25,
+    "max": 189261.6,
+    "min": 51212.49,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "71": {
+    "avg": 142556.68,
+    "max": 248218.5,
+    "min": 65777.5,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "72": {
+    "avg": 161253.31,
+    "max": 256912.25,
+    "min": 95822.05,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "73": {
+    "avg": 376779.95,
+    "max": 742969.21,
+    "min": 152771.28,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "74": {
+    "avg": 406620.91,
+    "max": 643483.4,
+    "min": 226443.99,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "75": {
+    "avg": 335675.42,
+    "max": 462047.48,
+    "min": 216753.55,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "76": {
+    "avg": 181644.29,
+    "max": 380667.96,
+    "min": 42546.76,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "77": {
+    "avg": 164886.33,
+    "max": 280151.42,
+    "min": 92615.23,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "78": {
+    "avg": 175895.35,
+    "max": 391580.02,
+    "min": 52125.5,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "79": {
+    "avg": 219993.63,
+    "max": 486558.05,
+    "min": 90798.71,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "8": {
+    "avg": 150898.84,
+    "max": 226985.08,
+    "min": 76667.19,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "80": {
+    "avg": 289090.23,
+    "max": 486937.9,
+    "min": 164224.5,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "81": {
+    "avg": 193779.84,
+    "max": 321970.61,
+    "min": 102064.78,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "82": {
+    "avg": 160392.65,
+    "max": 303805.9,
+    "min": 111514.9,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "83": {
+    "avg": 447008.79,
+    "max": 1098167.61,
+    "min": 221198.61,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "84": {
+    "avg": 79405.29,
+    "max": 146342,
+    "min": 26318,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "85": {
+    "avg": 137224.91,
+    "max": 368031.6,
+    "min": 71402.06,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "86": {
+    "avg": 401552.6,
+    "max": 758530.93,
+    "min": 211802,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "87": {
+    "avg": 253231.52,
+    "max": 347504.08,
+    "min": 147908.57,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "89": {
+    "avg": 105676.37,
+    "max": 290409.42,
+    "min": 58323.48,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "9": {
+    "avg": 388095.23,
+    "max": 590421.06,
+    "min": 184261.14,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  },
+  "96": {
+    "avg": 30541.32,
+    "max": 55410,
+    "min": 14272.18,
+    "months": 15,
+    "period": "2025-01..2026-03",
+    "source": "Fresh Food Packaging on-hand trend (packaging-scoped)"
+  }
+}
