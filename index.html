@@ -1095,10 +1095,10 @@ function todayStr(){
 }
 
 function thaiDate(dateStr){
-  // 'YYYY-MM-DD' -> 'DD/MM/YYYY'
+  // 'YYYY-MM-DD' -> 'DD/MM/YYYY' in Buddhist Era (T7 — was Common Era)
   if(!dateStr) return '-';
   const [y,m,d] = dateStr.split('-');
-  return `${d}/${m}/${y}`;
+  return `${d}/${m}/${Number(y)+543}`;
 }
 
 function daysInMonth(yyyyMm){
@@ -1120,9 +1120,10 @@ function dateRange(from, to){
 }
 
 function fmtDateTime(ts){
+  // Buddhist Era (T7 — was Common Era)
   if(!ts) return '-';
   const d = new Date(ts);
-  return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()+543} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
 /* ---------- Number / formatting helpers ---------- */
@@ -1608,9 +1609,10 @@ function generateMonthRange(from, to){
 
 const THAI_MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 function thaiMonthLabel(yyyyMm){
+  // Buddhist Era (T7 — was Common Era; bakery's equivalent ymToFull() is already BE)
   if(!yyyyMm) return '-';
   const [y, m] = yyyyMm.split('-').map(Number);
-  return `${THAI_MONTHS[m-1]} ${y}`;
+  return `${THAI_MONTHS[m-1]} ${y+543}`;
 }
 
 
