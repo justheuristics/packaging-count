@@ -1024,6 +1024,10 @@ const db = firebase.database();
 const DB_ROOT = ''; // production: reads/writes the real root (counts/, settings/). Use 'demo' only for dev.
 function scopedPath(path){ return DB_ROOT ? `${DB_ROOT}/${path}` : path; }
 
+/* ════ OUTLIER GUARD (T2) ════ — single tunable threshold, never auto-rejects,
+   only requires an explicit confirmation before save. See computeOutlierFlag(). */
+const OUTLIER_FACTOR = 10;
+
 
 /* ===================== js/utils.js ===================== */
 // ============================================================
@@ -1339,6 +1343,73 @@ function recordAmount(item, rec){
   return recordTotal(item, rec) * itemUnitCost(item);
 }
 
+/* ═══════════════════════════════════════════════════
+   OUTLIER GUARD (T2) — visibility only, never auto-rejects.
+   Two ratios: (a) qty vs. this store's own prior month (recordTotal — cross-UOM
+   safe), symmetric (larger/smaller), catches both a spike and a collapse in the
+   same store+item history; (b) this line's value vs. the network median for that
+   item this month (one-directional — only overstatement vs. peers is the known
+   failure mode). A missing median is recorded, not silently treated as a pass.
+   Keyed by category+code throughout, same namespace as ITEM_MAP.
+   ═══════════════════════════════════════════════════ */
+let PRIOR_MONTH_TOTALS = { FRESH:{}, TRANSFER:{}, NONFRESH:{} }; // cat -> code -> recordTotal from prior month
+let ITEM_MEDIAN = { FRESH:{}, TRANSFER:{}, NONFRESH:{} };        // cat -> code -> network median value this month
+let OUTLIER_CONTEXT_PROMISE = null; // saveCategory() awaits this so it never races the background load below
+
+function prevMonthKey(yyyyMm){
+  const [y,m] = yyyyMm.split('-').map(Number);
+  const d = new Date(y, m-2, 1); // Date month is 0-indexed; m-2 lands on the prior month
+  return `${d.getFullYear()}_${pad2(d.getMonth()+1)}`;
+}
+
+/* โหลด baseline สำหรับ outlier check — เรียกครั้งเดียวตอนโหลดข้อมูลเดือนของหน้าบันทึก */
+async function loadOutlierContext(){
+  const prevKey = prevMonthKey(CURRENT_MONTH);
+  const prevData = await dbGetOnce(`counts/${prevKey}/${SESSION.storeCode}`) || {};
+  PRIOR_MONTH_TOTALS = { FRESH:{}, TRANSFER:{}, NONFRESH:{} };
+  ['FRESH','TRANSFER','NONFRESH'].forEach(cat=>{
+    const catData = prevData[cat] || {};
+    Object.keys(catData).forEach(code=>{
+      const item = ITEM_MAP[cat][code];
+      if(!item) return;
+      const t = recordTotal(item, catData[code]);
+      if(t > 0) PRIOR_MONTH_TOTALS[cat][code] = t;
+    });
+  });
+  const key = CURRENT_MONTH.replace('-','_');
+  const medianRaw = await dbGetOnce(`stats/${key}/itemMedian`) || {};
+  ITEM_MEDIAN = { FRESH: medianRaw.FRESH||{}, TRANSFER: medianRaw.TRANSFER||{}, NONFRESH: medianRaw.NONFRESH||{} };
+}
+
+/* core ratio calc — ไม่ผูกกับ global ใดๆ เพื่อให้ admin-side (ข้ามทุกสาขา) เรียกซ้ำได้ */
+function evalOutlier(curTotal, curValue, priorTotal, median){
+  let qtyRatio = null, valueRatio = null;
+  const medianUnavailable = !(median != null && median > 0);
+  if(priorTotal != null && priorTotal > 0 && curTotal > 0){
+    qtyRatio = curTotal >= priorTotal ? curTotal/priorTotal : priorTotal/curTotal;
+  }
+  if(!medianUnavailable && curValue != null && curValue > 0){
+    valueRatio = curValue / median;
+  }
+  const flagged = (qtyRatio!=null && qtyRatio>=OUTLIER_FACTOR) || (valueRatio!=null && valueRatio>=OUTLIER_FACTOR);
+  return { flagged, qtyRatio, valueRatio, medianUnavailable };
+}
+
+/* store-side wrapper — อ่านจาก PRIOR_MONTH_TOTALS/ITEM_MEDIAN ที่โหลดไว้สำหรับสาขา+เดือนนี้ */
+function computeOutlierFlag(cat, code, rec){
+  const item = ITEM_MAP[cat][code];
+  if(!item) return null;
+  const total = recordTotal(item, rec);
+  const value = recordAmount(item, rec);
+  const r = evalOutlier(total, value, PRIOR_MONTH_TOTALS[cat][code], ITEM_MEDIAN[cat][code]);
+  if(!r.flagged) return null;
+  const parts = [];
+  if(r.qtyRatio!=null && r.qtyRatio>=OUTLIER_FACTOR) parts.push(`จำนวนต่างจากเดือนก่อน ${r.qtyRatio.toFixed(1)} เท่า`);
+  if(r.valueRatio!=null && r.valueRatio>=OUTLIER_FACTOR) parts.push(`มูลค่าสูงกว่าค่ากลางทั้งเครือ ${r.valueRatio.toFixed(1)} เท่า`);
+  if(r.medianUnavailable) parts.push('(ยังไม่มีค่ากลางทั้งเครือสำหรับเดือนนี้)');
+  return { cat, code, qtyRatio:r.qtyRatio, valueRatio:r.valueRatio, medianUnavailable:r.medianUnavailable, reason: parts.join(' · ') };
+}
+
 /* ---------- Excel export ---------- */
 function exportRowsToExcel(sheets, filename){
   // sheets: { 'ชื่อชีท': [ {col:val,...}, ... ] }
@@ -1383,7 +1454,7 @@ function buildExportRow(dateOrMonth, storeCode, cat, item, rec){
     'หน่วยนับ (เศษ)': item.uomCount || '',
     'รวม': total,
     'ราคาต่อหน่วยนับ (บาท)': Math.round(itemUnitCost(item)*100)/100,
-    'มูลค่า (บาท)': Math.round(amount*100)/100
+    'มูลค่า (บาท) — ต้นทุนประมาณการ ไม่ใช่มูลค่าอย่างเป็นทางการ': Math.round(amount*100)/100
   };
 }
 
@@ -1746,6 +1817,7 @@ async function loadMonthData(){
   if(!MONTHS_ACTIVE_CACHE) await loadMonthsCache();
   const active = isMonthActiveSync(CURRENT_MONTH);
   CURRENT_ACTIVE = active;
+  OUTLIER_CONTEXT_PROMISE = loadOutlierContext().catch(e=> console.warn('[loadMonthData] outlier context load error:', e.message)); // T2: ไม่ block การแสดงตาราง — saveCategory() รอ promise นี้เองก่อนคำนวณ flag
 
   // Step 3: แสดง banner และตาราง (จาก embedded data ก่อน)
   renderEntryStatusBanner(active);
@@ -1915,11 +1987,11 @@ function renderEntryTable(active=true){
       <thead><tr>
         <th>#</th><th>Supplier</th><th>รายการสินค้า</th><th>หน่วยนับ</th>
         <th class="text-right">จำนวน</th><th class="text-right">เศษ</th><th>อ้างอิง</th>
-        <th class="text-right">รวม</th><th class="text-right">มูลค่า (บาท)</th>
+        <th class="text-right">รวม</th><th class="text-right">มูลค่า (บาท)<div class="text-faint" style="font-size:10px;font-weight:400;">ต้นทุนประมาณการ — ไม่ใช่มูลค่าอย่างเป็นทางการ</div></th>
       </tr></thead>
       <tbody>${rows}</tbody>
       <tfoot><tr>
-        <td colspan="7" class="text-right">รวมมูลค่าทั้งหมวด</td>
+        <td colspan="7" class="text-right">รวมมูลค่าประมาณการทั้งหมวด</td>
         <td class="text-right num" id="grandTotalQty">0</td>
         <td class="text-right num" id="grandTotalAmount">0.00</td>
       </tr></tfoot>
@@ -2010,7 +2082,8 @@ function updateGrandTotals(){
   const totalsEl = document.getElementById('entryTotals');
   if(totalsEl){
     totalsEl.innerHTML = `กรอกแล้ว <b class="num">${filledCount}</b> / ${items.length} รายการ
-      &nbsp;&middot;&nbsp; มูลค่ารวม <b class="num">${fmtMoney(totalAmount)}</b> บาท`;
+      &nbsp;&middot;&nbsp; มูลค่ารวม <b class="num">${fmtMoney(totalAmount)}</b> บาท
+      <span class="text-faint" style="font-size:11px;">(ต้นทุนประมาณการ — ไม่ใช่มูลค่าอย่างเป็นทางการ)</span>`;
   }
 
   renderReferenceBand();
@@ -2047,6 +2120,7 @@ function renderReferenceBand(){
         <div class="ref-band-total">
           <div class="ref-band-label">มูลค่ารวมที่นับได้</div>
           <div class="ref-band-value num">฿${fmtMoney(total)}</div>
+          <div class="text-faint" style="font-size:10px;">ต้นทุนประมาณการ — ไม่ใช่มูลค่าอย่างเป็นทางการ</div>
         </div>
         <div class="text-faint mt-8" style="font-size:12.5px;">ยังไม่มีข้อมูลอ้างอิงสำหรับสาขานี้</div>
       </div>`;
@@ -2070,6 +2144,7 @@ function renderReferenceBand(){
         <div class="ref-band-total">
           <div class="ref-band-label">มูลค่ารวมที่นับได้</div>
           <div class="ref-band-value num">฿${fmtMoney(total)}</div>
+          <div class="text-faint" style="font-size:10px;">ต้นทุนประมาณการ — ไม่ใช่มูลค่าอย่างเป็นทางการ</div>
         </div>
         <div class="ref-band-gauge-wrap">
           <div class="ref-band-gauge-head"><span class="pill ${statusClass}">${status}</span></div>
@@ -2133,7 +2208,50 @@ function clearCategoryInputs(cat){
 /* ============================================================
    SAVE (Monthly)
 ============================================================ */
-async function saveCategory(){
+/* T2: รายการที่ค้าง confirm อยู่ — stash ไว้ให้ confirmOutliersAndSave() อ่านต่อ */
+let PENDING_OUTLIER_FLAGS = null;
+
+function showOutlierConfirmModal(flagged){
+  const rows = flagged.map(f=>{
+    const item = ITEM_MAP[f.cat][f.code];
+    return `<tr>
+      <td class="code">${escapeHtml(f.code)}</td>
+      <td>${escapeHtml(item?item.desc:'')}</td>
+      <td style="font-size:12px">${escapeHtml(f.reason)}</td>
+    </tr>`;
+  }).join('');
+  showModal(`
+    <h3>⚠️ พบรายการที่มีค่าผิดปกติ (${flagged.length} รายการ)</h3>
+    <div class="text-soft" style="font-size:13px;margin:10px 0;">รายการด้านล่างมีจำนวนหรือมูลค่าต่างจากปกติมาก — กรุณาตรวจสอบว่ากรอกถูกต้องก่อนยืนยัน (ระบบไม่ปิดกั้นการบันทึก แค่ต้องการให้ตรวจสอบก่อน)</div>
+    <div class="table-wrap" style="max-height:280px;">
+      <table class="dtable"><thead><tr><th>รหัส</th><th>รายการสินค้า</th><th>ผิดปกติ</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>
+    <label style="display:flex;gap:8px;align-items:flex-start;margin-top:14px;font-size:13px;cursor:pointer;">
+      <input type="checkbox" id="outlierConfirmChk" style="margin-top:2px">
+      <span>ฉันตรวจสอบแล้วว่าจำนวน/มูลค่าที่กรอกถูกต้อง</span>
+    </label>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="outlierCancelBtn">ยกเลิก</button>
+      <button class="btn btn-primary" id="outlierConfirmBtn" disabled>ยืนยันและบันทึก</button>
+    </div>
+  `, ()=>{
+    document.getElementById('outlierCancelBtn').addEventListener('click', closeModal);
+    const chk = document.getElementById('outlierConfirmChk');
+    const btn2 = document.getElementById('outlierConfirmBtn');
+    chk.addEventListener('change', ()=>{ btn2.disabled = !chk.checked; });
+    btn2.addEventListener('click', confirmOutliersAndSave);
+  });
+  PENDING_OUTLIER_FLAGS = flagged;
+}
+
+async function confirmOutliersAndSave(){
+  const flagged = PENDING_OUTLIER_FLAGS || [];
+  PENDING_OUTLIER_FLAGS = null;
+  closeModal();
+  await saveCategory(flagged);
+}
+
+async function saveCategory(confirmedFlags){
   // ── CONCURRENCY GUARD: ป้องกันกด Save ซ้ำหรือ double-tap บนมือถือ ──
   if(SAVE_IN_PROGRESS){
     toast('กำลังบันทึกอยู่ กรุณารอสักครู่...', 'default');
@@ -2146,11 +2264,15 @@ async function saveCategory(){
     return;
   }
 
+  // ── T2: รอ outlier context ให้โหลดเสร็จก่อนคำนวณ flag (โหลดแบบไม่ block ตอนเปิดหน้า) ──
+  if(OUTLIER_CONTEXT_PROMISE) await OUTLIER_CONTEXT_PROMISE;
+
   const cat = CURRENT_CAT;
   const items = ITEMS_BY_CAT[cat] || [];
   const updates = {};
   const changesLog = [];
   const newDataCat = {};
+  const flaggedNow = [];
   const key = CURRENT_MONTH.replace('-','_');
 
   items.forEach(item=>{
@@ -2195,6 +2317,9 @@ async function saveCategory(){
         const ovQty = baseline ? baseline.qty : 0, ovSub = baseline ? baseline.subunit_qty : 0;
         if(ovQty !== rec.qty) changesLog.push({ itemCode:item.code, itemDesc:item.desc, field:'qty', oldVal:ovQty, newVal:rec.qty });
         if(ovSub !== rec.subunit_qty) changesLog.push({ itemCode:item.code, itemDesc:item.desc, field:'subunit_qty', oldVal:ovSub, newVal:rec.subunit_qty });
+        // ── T2: outlier check เฉพาะบรรทัดที่เปลี่ยนแปลงจริง ──
+        const flag = computeOutlierFlag(cat, item.code, rec);
+        if(flag) flaggedNow.push(flag);
       }
       newDataCat[item.code] = rec;
     } else if(baseline){
@@ -2208,6 +2333,26 @@ async function saveCategory(){
     toast('ไม่มีข้อมูลที่เปลี่ยนแปลง');
     return;
   }
+
+  // ── T2: มีรายการผิดปกติ และยังไม่ได้ confirm — ต้องแสดง modal ก่อน ไม่ auto-reject ──
+  if(!confirmedFlags && flaggedNow.length){
+    showOutlierConfirmModal(flaggedNow);
+    return;
+  }
+  const flagMap = {};
+  (confirmedFlags||[]).forEach(f => flagMap[f.cat+'|'+f.code] = f);
+  Object.keys(updates).forEach(path=>{
+    const rec = updates[path];
+    if(!rec) return;
+    // path: counts/{key}/{store}/{cat}/{code}
+    const parts = path.split('/');
+    const flag = flagMap[parts[3]+'|'+parts[4]];
+    if(flag){
+      rec.confirmedBy = SESSION.username;
+      rec.confirmedAt = Date.now();
+      rec.flagReason = flag.reason;
+    }
+  });
 
   // ── SET LOCK ก่อน async operation ──
   SAVE_IN_PROGRESS = true;
@@ -2248,7 +2393,9 @@ async function saveCategory(){
       user: SESSION.username,
       action: 'SAVE',
       category: cat,
-      changes: changesLog
+      changes: changesLog,
+      source: 'ui',
+      outlierConfirmed: (confirmedFlags||[]).length
     }).catch(e=> console.warn('[saveCategory] log error:', e.message));
 
     CURRENT_DATA[cat] = newDataCat;
@@ -2416,7 +2563,7 @@ async function loadMonthlyStats(){
     <div class="table-wrap">
       <table class="dtable">
         <thead><tr>
-          <th>เดือน</th><th>สถานะ</th><th class="text-right">มูลค่า FRESH FOOD (บาท)</th><th></th>
+          <th>เดือน</th><th>สถานะ</th><th class="text-right">มูลค่า FRESH FOOD (บาท)<div class="text-faint" style="font-size:10px;font-weight:400;">ต้นทุนประมาณการ — ไม่ใช่มูลค่าอย่างเป็นทางการ</div></th><th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -2802,6 +2949,7 @@ async function loadOverviewStats(){
       <div class="label">มูลค่ารวมของเดือนนี้</div>
       <div class="value">${fmtMoney(grandAmount)}</div>
       <div class="sub">บาท (ทุกสาขา / FRESH FOOD + TRANSFER)</div>
+      <div class="text-faint" style="font-size:10px;">ต้นทุนประมาณการ — ไม่ใช่มูลค่าอย่างเป็นทางการ</div>
     </div>
   `;
 }
@@ -3092,7 +3240,7 @@ function renderAdminDataTable(rows){
   wrapEl.innerHTML = `
     <table class="dtable">
       <thead><tr>
-        <th>เดือน</th><th>สาขา</th><th>หมวดหมู่</th><th>รายการสินค้า</th><th>จำนวนที่บันทึก</th><th class="text-right">รวม</th><th class="text-right">มูลค่า</th><th>การจัดการ</th>
+        <th>เดือน</th><th>สาขา</th><th>หมวดหมู่</th><th>รายการสินค้า</th><th>จำนวนที่บันทึก</th><th class="text-right">รวม</th><th class="text-right">มูลค่า<div class="text-faint" style="font-size:10px;font-weight:400;">ประมาณการ</div></th><th>การจัดการ</th>
       </tr></thead>
       <tbody>${trs}</tbody>
     </table>
@@ -3728,11 +3876,11 @@ async function runAdminExport(){
           'ชื่อสาขา': r['ชื่อสาขา'],
           'หมวดหมู่': r['หมวดหมู่'],
           'รวม': 0,
-          'มูลค่า (บาท)': 0
+          'มูลค่า (บาท) — ต้นทุนประมาณการ ไม่ใช่มูลค่าอย่างเป็นทางการ': 0
         };
       }
       summaryMap[skey]['รวม'] += Number(r['รวม']) || 0;
-      summaryMap[skey]['มูลค่า (บาท)'] += Number(r['มูลค่า (บาท)']) || 0;
+      summaryMap[skey]['มูลค่า (บาท) — ต้นทุนประมาณการ ไม่ใช่มูลค่าอย่างเป็นทางการ'] += Number(r['มูลค่า (บาท) — ต้นทุนประมาณการ ไม่ใช่มูลค่าอย่างเป็นทางการ']) || 0;
     });
 
     const catOrder = { 'FRESH FOOD': 0, 'TRANSFER': 1, 'NON FRESH': 2 };
@@ -3744,14 +3892,14 @@ async function runAdminExport(){
     });
     summaryRows.forEach(r=>{
       r['รวม'] = Math.round(r['รวม'] * 100) / 100;
-      r['มูลค่า (บาท)'] = Math.round(r['มูลค่า (บาท)'] * 100) / 100;
+      r['มูลค่า (บาท) — ต้นทุนประมาณการ ไม่ใช่มูลค่าอย่างเป็นทางการ'] = Math.round(r['มูลค่า (บาท) — ต้นทุนประมาณการ ไม่ใช่มูลค่าอย่างเป็นทางการ'] * 100) / 100;
     });
     const grandQty = summaryRows.reduce((s,r)=> s + r['รวม'], 0);
-    const grandAmt = summaryRows.reduce((s,r)=> s + r['มูลค่า (บาท)'], 0);
+    const grandAmt = summaryRows.reduce((s,r)=> s + r['มูลค่า (บาท) — ต้นทุนประมาณการ ไม่ใช่มูลค่าอย่างเป็นทางการ'], 0);
     summaryRows.push({
       'รหัสผู้ใช้สาขา': '', 'เลขที่สาขา (Loc)': '', 'ชื่อสาขา': 'รวมทั้งหมด',
       'หมวดหมู่': '', 'รวม': Math.round(grandQty * 100) / 100,
-      'มูลค่า (บาท)': Math.round(grandAmt * 100) / 100
+      'มูลค่า (บาท) — ต้นทุนประมาณการ ไม่ใช่มูลค่าอย่างเป็นทางการ': Math.round(grandAmt * 100) / 100
     });
 
     const filename = `PackagingCount_AllBranches_${month}.xlsx`;
@@ -3914,6 +4062,8 @@ async function renderDashboardView(){
   await loadDashboard();
 }
 
+let DASH_EXCEPTIONS = [];
+
 async function loadDashboard(){
   const isAdmin = SESSION.role === 'admin';
   const bodyEl = document.getElementById('dashBody');
@@ -3926,7 +4076,102 @@ async function loadDashboard(){
   DASH_STORE = storeFilter;
 
   const result = await computeCategorySums(DASH_MONTH, storeFilter, isAdmin);
+  DASH_EXCEPTIONS = (isAdmin && storeFilter === 'ALL') ? await computeAndPersistOutlierExceptions(DASH_MONTH) : [];
   renderDashboardResult(result, isAdmin, storeFilter);
+}
+
+/* ═══ Admin exception queue (T2) — คำนวณจากทุกสาขาในเดือนที่เลือก แยก fetch จาก computeCategorySums
+   เพราะต้องใช้เดือนก่อนหน้าด้วย เขียน stats/{ym}/itemMedian ทุกครั้งที่เปิด — เป็น baseline (b) ที่หน้า
+   บันทึกของสาขาอ่านไปใช้ ═══ */
+async function computeAndPersistOutlierExceptions(month){
+  const key = month.replace('-','_');
+  const prevKey = prevMonthKey(month);
+  const data = await dbGetOnce(`counts/${key}`) || {};
+  const prevDataAll = await dbGetOnce(`counts/${prevKey}`) || {};
+
+  // pass 1: median ต่อ cat+code จากทุกสาขาที่กรอกไว้ในเดือนนี้
+  const valuesByCode = { FRESH:{}, TRANSFER:{}, NONFRESH:{} };
+  Object.values(data).forEach(rec=>{
+    ['FRESH','TRANSFER'].forEach(cat=>{ // NONFRESH เลิกใช้งานแล้ว เหมือนส่วนอื่นของแดชบอร์ด
+      const catData = rec[cat]; if(!catData) return;
+      Object.entries(catData).forEach(([code, r])=>{
+        const item = ITEM_MAP[cat][code]; if(!item) return;
+        const v = recordAmount(item, r);
+        if(v > 0) (valuesByCode[cat][code] = valuesByCode[cat][code]||[]).push(v);
+      });
+    });
+  });
+  const medianMap = { FRESH:{}, TRANSFER:{}, NONFRESH:{} };
+  ['FRESH','TRANSFER'].forEach(cat=>{
+    Object.keys(valuesByCode[cat]).forEach(code=>{
+      const arr = valuesByCode[cat][code].slice().sort((a,b)=>a-b);
+      const mid = Math.floor(arr.length/2);
+      medianMap[cat][code] = arr.length%2 ? arr[mid] : (arr[mid-1]+arr[mid])/2;
+    });
+  });
+  dbSet(`stats/${key}/itemMedian`, medianMap).catch(e=> console.warn('[outlier] persist median failed:', e.message));
+  dbSet(`stats/${key}/computedAt`, Date.now()).catch(()=>{});
+
+  // pass 2: flag ทุกบรรทัดของทุกสาขา เทียบ median ที่เพิ่งคำนวณ + เดือนก่อนของสาขานั้นๆ
+  const exceptions = [];
+  Object.entries(data).forEach(([storeCode, rec])=>{
+    const prevRec = prevDataAll[storeCode] || {};
+    ['FRESH','TRANSFER'].forEach(cat=>{
+      const catData = rec[cat]; if(!catData) return;
+      const prevCatData = prevRec[cat] || {};
+      Object.entries(catData).forEach(([code, r])=>{
+        const item = ITEM_MAP[cat][code]; if(!item) return;
+        const total = recordTotal(item, r);
+        const value = recordAmount(item, r);
+        const priorTotal = prevCatData[code] ? recordTotal(item, prevCatData[code]) : null;
+        const rr = evalOutlier(total, value, priorTotal, medianMap[cat][code]);
+        if(!rr.flagged) return;
+        const s = getStoreByCode(storeCode);
+        exceptions.push({
+          storeCode, storeName: s?s.name:storeCode, cat, code, itemName: item.desc,
+          qty: (r&&r.qty!=null)?r.qty:0, value, qtyRatio: rr.qtyRatio, valueRatio: rr.valueRatio,
+          ratio: Math.max(rr.qtyRatio||0, rr.valueRatio||0),
+          confirmedBy: (r&&r.confirmedBy) || null
+        });
+      });
+    });
+  });
+  exceptions.sort((a,b)=> b.ratio-a.ratio);
+  return exceptions.slice(0,20);
+}
+
+function exceptionQueueCardHtml(exceptions, month, show){
+  if(!show) return '';
+  if(!exceptions.length){
+    return `<div class="card mt-16">
+      <div class="card-head"><div class="card-title">🚩 รายการที่ต้องตรวจสอบ — ${thaiMonthLabel(month)}</div></div>
+      <div class="text-soft" style="padding:20px;text-align:center;">✅ ไม่พบรายการผิดปกติในเดือนนี้</div>
+    </div>`;
+  }
+  const rows = exceptions.map(e=>`
+    <tr>
+      <td>${escapeHtml(e.storeCode)} — ${escapeHtml(e.storeName)}</td>
+      <td class="code">${escapeHtml(e.code)}</td>
+      <td style="max-width:220px;white-space:normal;">${escapeHtml(e.itemName)}</td>
+      <td class="text-right num">${fmtNum(e.qty,2)}</td>
+      <td class="text-right num">${fmtMoney(e.value)}</td>
+      <td class="text-right num" style="color:var(--danger);font-weight:700;">${e.ratio.toFixed(1)}x</td>
+      <td>${e.confirmedBy?escapeHtml(e.confirmedBy):'<span class="text-faint">—</span>'}</td>
+    </tr>`).join('');
+  return `<div class="card mt-16" style="border:1px solid var(--danger);">
+    <div class="card-head">
+      <div>
+        <div class="card-title" style="color:var(--danger);">🚩 รายการที่ต้องตรวจสอบ — ${thaiMonthLabel(month)}</div>
+        <div class="muted">Top ${exceptions.length} จากอัตราส่วนผิดปกติ (เกณฑ์ ${OUTLIER_FACTOR} เท่า) — ไม่ปิดกั้นการบันทึก แสดงเพื่อให้ตรวจสอบ</div>
+      </div>
+    </div>
+    <div class="table-wrap" style="max-height:360px;">
+      <table class="dtable">
+        <thead><tr><th>สาขา</th><th>รหัส</th><th>รายการสินค้า</th><th class="text-right">จำนวน</th><th class="text-right">มูลค่า (บาท)<div class="text-faint" style="font-size:10px;font-weight:400;">ประมาณการ</div></th><th class="text-right">อัตราส่วน</th><th>ยืนยันโดย</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
 }
 
 /**
@@ -4038,6 +4283,7 @@ function renderDashboardResult(result, isAdmin, storeFilter){
           <div class="dash-hero-label">มูลค่า FRESH FOOD รวม — ${thaiMonthLabel(DASH_MONTH)}</div>
           <div class="dash-hero-value num">${fmtMoney(freshValue)}</div>
           <div class="dash-hero-unit">บาท</div>
+          <div class="dash-hero-unit" style="opacity:.7;font-size:11px;">ต้นทุนประมาณการ — ไม่ใช่มูลค่าอย่างเป็นทางการ</div>
         </div>
         <div class="dash-hero-badge">FRESH FOOD</div>
       </div>
@@ -4119,6 +4365,8 @@ function renderDashboardResult(result, isAdmin, storeFilter){
         </div>
       </div>
     </div>
+
+    ${exceptionQueueCardHtml(DASH_EXCEPTIONS, DASH_MONTH, showStoreBreakdown)}
 
     ${storeBreakdownSection}
   `;
