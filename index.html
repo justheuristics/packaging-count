@@ -1473,6 +1473,38 @@ function exportRowsToExcel(sheets, filename){
   XLSX.writeFile(wb, filename);
 }
 
+/* ---------- Store status export (T5) ────
+   Reference implementation: bakery's exportStoreStatusExcel() (three sheets, same column
+   order). This repo also tracks who saved each store's data (_meta.updatedBy) — bakery
+   doesn't have that field, so this export carries one extra column (บันทึกโดย) rather than
+   dropping data bakery lacks. Requires T4's isCountableAt() so a Excel export doesn't list
+   77 "missing branches" that are actually a dummy warehouse. ---------- */
+async function exportStoreStatusPackaging(month){
+  toast('กำลังสร้างไฟล์ Excel...');
+  const result = await computeCategorySums(month, 'ALL', true);
+  const { submittedStores, notSubmittedStores } = result;
+
+  const notR = notSubmittedStores.map((s,i)=>({
+    'ลำดับ': i+1, 'เลขสาขา': s.locNo, 'ชื่อสาขา': s.name, 'Username': s.storeCode,
+    'สถานะ': 'ยังไม่บันทึก', 'บันทึกล่าสุด': '', 'บันทึกโดย': ''
+  }));
+  const sentR = submittedStores.map((s,i)=>({
+    'ลำดับ': i+1, 'เลขสาขา': s.locNo, 'ชื่อสาขา': s.name, 'Username': s.storeCode,
+    'สถานะ': 'บันทึกแล้ว', 'บันทึกล่าสุด': s.updatedAt ? fmtDateTime(s.updatedAt) : '—', 'บันทึกโดย': s.updatedBy || '—'
+  }));
+  const allList = [...submittedStores.map(s=>({...s, sent:true})), ...notSubmittedStores.map(s=>({...s, sent:false}))]
+    .sort((a,b)=> (Number(a.locNo)||9999) - (Number(b.locNo)||9999));
+  const allR = allList.map((s,i)=>({
+    'ลำดับ': i+1, 'เลขสาขา': s.locNo, 'ชื่อสาขา': s.name, 'Username': s.storeCode,
+    'สถานะ': s.sent ? 'บันทึกแล้ว' : 'ยังไม่บันทึก',
+    'บันทึกล่าสุด': s.sent && s.updatedAt ? fmtDateTime(s.updatedAt) : '—',
+    'บันทึกโดย': s.sent ? (s.updatedBy || '—') : ''
+  }));
+
+  exportRowsToExcel({ 'ยังไม่บันทึก': notR, 'บันทึกแล้ว': sentR, 'ทั้งหมด': allR }, `StoreStatus_${month}_Packaging.xlsx`);
+  toast('Export สำเร็จ ✅', 'success');
+}
+
 /* ---------- Store helpers ---------- */
 function getStoreByCode(code){
   return STORES_DATA.find(s=>s.username === code);
@@ -4354,6 +4386,7 @@ function renderDashboardResult(result, isAdmin, storeFilter){
           <div class="card-title">สถานะการบันทึกข้อมูลรายสาขา — ${thaiMonthLabel(DASH_MONTH)}</div>
           <div class="muted">แบ่งสาขาตามสถานะ เพื่อให้ติดตามสาขาที่ยังไม่บันทึกได้ง่ายขึ้น</div>
         </div>
+        <button class="btn btn-accent btn-sm" onclick="exportStoreStatusPackaging('${DASH_MONTH}')">🧾 Export Excel</button>
       </div>
       <div class="dash-split-wrap">
         <div class="dash-split-col dash-split-pending">
