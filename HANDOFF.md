@@ -65,12 +65,16 @@ The original doc lists 9 tickets; T10 and T11 were added after it was written.
 | T5 | 🟢 P1 | Export store submission status to Excel (**this repo** — bakery already had this) | ✅ merged ([#4](https://github.com/justheuristics/packaging-count/pull/4)) |
 | T6 | 🟢 P1 | Price / priceUom / priceEffectiveFrom on bakery item master | N/A — **bakery only** |
 | T7 | 🟢 P1 | Align Thai calendar display (BE) across both apps | ✅ merged ([#5](https://github.com/justheuristics/packaging-count/pull/5)) |
-| T8 | 🟡 P2 | Price list bulk import with preview-diff-confirm | ⛔ **blocked** — see "What still blocks T8/T9" below (Q3 is decided; T11 is now its prerequisite) |
+| T8 | 🟡 P2 | Price list bulk import with preview-diff-confirm | ⛔ **blocked** — see "What still blocks T8/T9" below (Q3 decided and its T11 prerequisite merged; three real blockers remain) |
 | T9 | 🟡 P2 | Stock-take Excel upload with validation gate | ⛔ **blocked** — see "What still blocks T8/T9" below (Q4 is decided) |
 | T10 | 🔴 P0 | Admin-visible reference band + outlier no-coverage state | ✅ merged |
-| T11 | 🟡 P2 | Snapshot price onto the entry at save time (**prerequisite for T8**) | 📋 not started — design decided 25 Aug 2026, see Q3 below |
+| T11 | 🟡 P2 | Snapshot price onto the entry at save time (**prerequisite for T8**) | ✅ merged — see Q3 below |
 
-T1, T2, T4, T5, T7 and T10 are done here (T3/T6 are bakery-only).
+T1, T2, T4, T5, T7, T10 and T11 are done here (T3/T6 are bakery-only). **This repo
+led T11** — bakery's is still open and may follow this shape, or diverge, since its
+price model differs (T6 gave it `price`/`priceUom`/`priceEffectiveFrom` +
+`estCostOf()`). Each repo keeps its own `HANDOFF.md`; this section does not speak
+for bakery.
 
 ## What's done
 
@@ -184,10 +188,83 @@ full coverage when it may be no coverage. Verified against real July 2026 data:
 exist here; bakery's `UOM_VOCAB_REPORT.md` covers the shared UOM-vocabulary
 finding. Nothing to produce on this side.
 
+### T11 — snapshot price at save time (merged)
+
+Q3, decided 25 Aug 2026: history freezes at count-time prices. `itemUnitCost(item)`
+always read `item.price` **live** from the item master, so an admin editing one
+price on the item screen silently restated every prior month's reported value —
+including the T10 reference-band comparison. This repo led T11; bakery's is still
+open (see the ticket table above).
+
+**The snapshot shape.** Two fields stamped onto a count record at save time:
+`price_at_count` and `pack_at_count`. Both are stamped, not just price — the app's
+own math (`amount = (qty·pack + sub) · (price/pack)`) means a `packCount` change
+alone would still move a "frozen" amount if only price were captured. Three new
+helpers sit beside `itemUnitCost()`: `hasPriceSnapshot(rec)` (true only when both
+fields are finite and `pack_at_count > 0` — a malformed stamp falls back rather
+than dividing by zero or producing `NaN`), `effectivePackCount(item, rec)`, and
+`effectiveUnitCost(item, rec)`. `recordTotal()` and `recordAmount()` — the two
+chokepoints every money and quantity figure in the app already routes through —
+switch to the `effective*` helpers, so the dashboard, the reference band, history,
+the exception queue, the admin data table and both Excel exports all pick this up
+without touching a single call site. `itemUnitCost(item)` itself is unchanged; it's
+what `effectiveUnitCost` falls back to.
+
+**No backfill — decided, not an oversight.** Every record that existed before this
+ticket has no snapshot and keeps reading the live master price, same as before.
+Fabricating a historical price the app never recorded is the same mistake as
+fabricating a reference band, which T10 explicitly refused to do. Verified against
+real July 2026 production data: **all 4,042 rows report as still floating on live
+price** (0 snapshotted, since none predates this ticket) — proof the read side is a
+true no-op for existing data, and the FRESH total (฿291,122,691.35), the 131/172
+submitted count, the band summary (89/42/0), and stores 153/159's out-of-band
+figures were all bit-for-bit unchanged after this landed.
+
+**The fallback is visible everywhere money is shown**, mirroring T10's "missing ≠
+passed" rule: a muted `ราคาปัจจุบัน — ยังไม่ได้ตรึง` pill on un-stamped rows in the
+admin data table; a `ราคาฐาน` column in the Excel export stating the basis
+(`ราคา ณ วันที่นับ` vs. `ราคาปัจจุบัน — ยังไม่ได้ตรึง`) per row; a count of how many
+of the month's rows are still un-stamped on the admin dashboard
+(`livePriceNoteHtml()`, counted inside `computeCategorySums()`'s existing loop —
+no extra Firebase read); and a warning in `saveItem()`'s modal and confirm toast,
+on the screen where a live-price restatement actually originates, stating plainly
+that already-stamped months are unaffected and un-stamped months will move.
+
+**Fixed a pre-existing bug found while building this.** `saveEditedRecord()` (the
+admin's inline data-edit) rebuilt the record from scratch — `{ qty, subunit_qty,
+counted_at }` — which already silently dropped T2's `confirmedBy`/`confirmedAt`/
+`flagReason` on every admin edit, wiping the outlier-confirmation audit trail. It
+would have dropped the price snapshot the same way. Now spreads the existing
+record and overwrites only the edited fields — carrying the snapshot **and** the
+T2 fields forward, and **never re-stamping**: an admin correcting a past month's
+quantity must not silently re-price that month at today's rate. A legacy row with
+no snapshot stays un-snapshotted after an edit.
+
+**Consequences worth knowing, not fixed by this ticket:**
+- `PRIOR_MONTH_TOTALS`'s qty-ratio comparison (T2) now compares each month on its
+  own pack basis once both months are snapshotted — previously a `packCount`
+  change between months was invisible, hidden behind a coincidentally-unmoved
+  ratio for zero-`subunit_qty` rows.
+- A deleted master item's historical amounts no longer silently zero out.
+  `placeholderItem()` returns `price: 0`; an un-snapshotted record for a deleted
+  item already read ฿0 for its history, a snapshotted one now survives deletion.
+- The first month with a mix of stamped and un-stamped rows blends both price
+  bases into that month's `stats/{ym}/itemMedian`. Self-corrects after one month;
+  recorded, not fixed.
+
+**Departure — write-path verification without a production write.** T11 is the
+first write-path ticket since T2, and guardrail 1's `demo/` gap (blocker #3 below)
+is still unfixed, so a real round-trip there is impossible. Per that guardrail,
+verified logic-level instead: stubbed `dbUpdate` in a live session to capture its
+payload instead of sending it, drove a real `saveCategory()` as a logged-in store,
+and confirmed the captured record carried `price_at_count`/`pack_at_count` equal to
+the live master at save time, `_meta` present, and no other paths touched — then
+restored the stub. No production write; `DB_ROOT` stayed `''` throughout.
+
 ## Departures from the original plan doc
 
-These were verified against actual code/data while implementing T1, T2, T4,
-T5, T7:
+These were verified against actual code/data while implementing T1, T2, T4, T5,
+T7, T10 and T11 (items 1–4 predate T10/T11; items 5–8 are their own):
 
 1. This repo's 208 locations classify as **DC 19, FC 5, DUMMY 1, FROZEN 9,
    STORE 172, VIRTUAL 2** — confirmed at runtime (not just in the static
@@ -214,6 +291,14 @@ T5, T7:
 6. **T10 departure — 10.3 (UOM vocabulary report) doesn't apply here.** No
    `master_uom.json`, no `UOM_LIST` in this repo. See bakery's
    `UOM_VOCAB_REPORT.md` for the shared finding.
+7. **T11 departure — write-path verification used a logic-level stub, not a real
+   round-trip.** Guardrail 1's `demo/` gap is still open; see T11's "What's done"
+   entry above for exactly what was stubbed and why.
+8. **T11 departure — fixed a bug outside T11's stated scope.**
+   `saveEditedRecord()` rebuilding the record instead of spreading it predates
+   T11 and already dropped T2's confirmation fields on every admin edit; T11
+   would have inherited that same bug for its own snapshot fields, so the fix
+   went in as part of this ticket rather than being filed separately.
 
 ## Decisions closed on 25 Aug 2026 — do not re-raise these
 
@@ -226,17 +311,14 @@ not reopen them without a new instruction from the project owner.
   stays `false`; this is now settled configuration, not a pending question — see
   the comment above the constant in `index.html`.
 - **Q3 — DECIDED: snapshot the price onto the entry at save time.** History
-  freezes at count-time prices. **This is not implemented by T10 — it is T11,
-  and T11 is a prerequisite for T8.** See the T11 row in the ticket table; the
-  design is described there and only there, so there is one description of it
-  rather than two that can drift apart. **Until T11 lands, `itemUnitCost()`
-  still reads the live `item.price` for every month, so historical totals are
-  not yet stable** — editing a price on the item master today silently
-  restates every prior month's reported value, including the band comparison
-  T10 just put on the admin screen. (Unlike bakery, this repo never needed a
-  T6-style migration to add price fields — `item.price` has been on the
-  embedded item master from the start; T11 here is purely the snapshot-at-save
-  logic, no field migration.)
+  freezes at count-time prices. **Implemented by T11** (see its "What's done"
+  entry above for the field shape and the no-backfill rule). Records saved from
+  25 Aug 2026 onward carry `price_at_count`/`pack_at_count` and are immune to
+  later price edits; every record saved before T11 has no snapshot and keeps
+  reading the live master price, marked visibly wherever money is shown
+  (`ราคาปัจจุบัน — ยังไม่ได้ตรึง`) rather than silently. There was never a
+  T6-style migration needed here — `item.price` has been on the embedded item
+  master from the start; T11 was purely the snapshot-at-save logic.
 - **Q4 — DECIDED: store-only upload.** No admin-on-behalf path in T9, and
   therefore no `submittedBy` case-branching to build. **Known open
   consequence, recorded honestly:** the de facto recovery path when a store
@@ -259,13 +341,15 @@ These are the real blockers. Each needs an owner to act; none is a coding task.
    under that root return `PERMISSION_DENIED` and fall back to leaf-only
    localStorage. T8 and T9 are both write paths, so this must either be
    fixed, or logic-only verification accepted as an explicit, discussed
-   trade-off. **Owner: project owner.** (T10 was unaffected — 10.1 and 10.2
-   are read/display changes.)
+   trade-off — T11 already took this trade-off once (see its departure entry
+   above); T8/T9 will need the same call made explicitly again, since bulk
+   writes are a larger blast radius than T11's single-record save path.
+   **Owner: project owner.**
 
-Plus one sequencing note that is not a blocker but is easy to miss: **T11 must
-land before T8**, per the Q3 decision above.
+T11 (Q3's prerequisite for T8) is merged, so that sequencing blocker is cleared —
+only the three above remain.
 
-When starting: `git checkout -b ticket-8-price-import main` (or `ticket-9-…` /
-`ticket-11-…`), and confirm `git log origin/main` shows T1–T7 and T10 merged
-first. Update this section as blockers clear, so the file stays a living resume
-point. Don't delete the guardrails/departures sections — they stay relevant.
+When starting: `git checkout -b ticket-8-price-import main` (or `ticket-9-…`),
+and confirm `git log origin/main` shows T1–T7, T10 and T11 merged first. Update
+this section as blockers clear, so the file stays a living resume point. Don't
+delete the guardrails/departures sections — they stay relevant.

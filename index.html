@@ -1376,6 +1376,30 @@ function itemUnitCost(item){
   return price / pack;
 }
 
+/* ═══ T11: price snapshot at save time — Q3, decided 25 Aug 2026 ═══
+   itemUnitCost() above always reads the LIVE item master — editing one price on
+   the admin item screen silently restates every prior month's reported value,
+   including the T10 reference-band comparison. price_at_count/pack_at_count are
+   stamped onto a count record when it is saved (saveCategory()) and freeze both
+   inputs to recordAmount()'s math, not just price: amount = (qty·pack + sub) ·
+   (price/pack), so a packCount change alone would still move a "frozen" amount
+   if only price were captured. No backfill (guardrail: never fabricate history
+   we don't have) — a record with no snapshot falls back to the live master and
+   says so visibly wherever money is shown, the same "missing ≠ passed" rule T10
+   applied to the reference band. */
+function hasPriceSnapshot(rec){
+  if(!rec) return false;
+  const price = Number(rec.price_at_count);
+  const pack = Number(rec.pack_at_count);
+  return Number.isFinite(price) && Number.isFinite(pack) && pack > 0;
+}
+function effectivePackCount(item, rec){
+  return hasPriceSnapshot(rec) ? Number(rec.pack_at_count) : (Number(item.packCount) || 1);
+}
+function effectiveUnitCost(item, rec){
+  return hasPriceSnapshot(rec) ? (Number(rec.price_at_count) / Number(rec.pack_at_count)) : itemUnitCost(item);
+}
+
 // Backward-compat reader: decodes both the new {qty, subunit_qty} shape and the
 // legacy FV/BUT/FISH (or QTY) shape into a common {qty, subunit_qty, legacy} form.
 // Legacy total is preserved exactly in subunit_qty — there's no way to know how it
@@ -1393,11 +1417,11 @@ function normalizeRecord(item, rec){
 function recordTotal(item, rec){
   const r = normalizeRecord(item, rec);
   if(!r) return 0;
-  const pack = Number(item.packCount) || 1;
+  const pack = effectivePackCount(item, rec); // T11: snapshotted pack basis when present, else live master
   return r.qty * pack + r.subunit_qty; // total in uomCount (small) units — unchanged meaning
 }
 function recordAmount(item, rec){
-  return recordTotal(item, rec) * itemUnitCost(item);
+  return recordTotal(item, rec) * effectiveUnitCost(item, rec); // T11: snapshotted unit cost when present, else live master
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1615,7 +1639,11 @@ function buildExportRow(dateOrMonth, storeCode, cat, item, rec){
     'เศษ': n ? n.subunit_qty : 0,
     'หน่วยนับ (เศษ)': item.uomCount || '',
     'รวม': total,
-    'ราคาต่อหน่วยนับ (บาท)': Math.round(itemUnitCost(item)*100)/100,
+    // T11: the effective unit cost — snapshotted price/pack when the record has one, else the
+    // live master (same fallback recordAmount() itself uses). ราคาฐานคือคอลัมน์ใหม่ที่บอกว่า
+    // ตัวเลขนี้มาจากราคาที่ตรึงไว้ตอนนับ หรือยังลอยตามราคาปัจจุบัน — ห้ามให้สองกรณีนี้ดูเหมือนกัน
+    'ราคาต่อหน่วยนับ (บาท)': Math.round(effectiveUnitCost(item, rec)*100)/100,
+    'ราคาฐาน': hasPriceSnapshot(rec) ? 'ราคา ณ วันที่นับ' : 'ราคาปัจจุบัน — ยังไม่ได้ตรึง',
     'มูลค่า (บาท) — ต้นทุนประมาณการ ไม่ใช่มูลค่าอย่างเป็นทางการ': Math.round(amount*100)/100
   };
 }
@@ -2496,7 +2524,15 @@ async function saveCategory(confirmedFlags){
     if(hasInput){
       const changed = !baseline || baseline.qty !== rec.qty || baseline.subunit_qty !== rec.subunit_qty;
       if(changed){
-        updates[`counts/${key}/${SESSION.storeCode}/${cat}/${item.code}`] = { ...rec, counted_at: Date.now() };
+        // T11: stamp price/pack basis as of this save — every later amount read for this
+        // record prefers this stamp over whatever the item master says at read time (Q3,
+        // decided 25 Aug 2026). Both inputs are captured, not just price: packCount changing
+        // later would otherwise still move a "frozen" amount.
+        updates[`counts/${key}/${SESSION.storeCode}/${cat}/${item.code}`] = {
+          ...rec, counted_at: Date.now(),
+          price_at_count: Number(item.price) || 0,
+          pack_at_count: Number(item.packCount) || 1
+        };
         const ovQty = baseline ? baseline.qty : 0, ovSub = baseline ? baseline.subunit_qty : 0;
         if(ovQty !== rec.qty) changesLog.push({ itemCode:item.code, itemDesc:item.desc, field:'qty', oldVal:ovQty, newVal:rec.qty });
         if(ovSub !== rec.subunit_qty) changesLog.push({ itemCode:item.code, itemDesc:item.desc, field:'subunit_qty', oldVal:ovSub, newVal:rec.subunit_qty });
@@ -3407,6 +3443,11 @@ function renderAdminDataTable(rows){
     const n = normalizeRecord(item, rec);
     const legacyBadge = n && n.legacy ? '<span class="pill pill-muted" style="margin-left:4px;font-size:10.5px;">ข้อมูลเดิม</span>' : '';
     const fieldVals = `<span class="text-soft">จำนวน:</span> <b class="num">${fmtNum(n?n.qty:0,2)}</b>&nbsp;&nbsp;<span class="text-soft">เศษ:</span> <b class="num">${fmtNum(n?n.subunit_qty:0,2)}</b>${legacyBadge}`;
+    // T11: a row with no price snapshot is still reading the live item master, not a frozen
+    // count-time price — say so next to the amount itself, the same "missing ≠ passed" idiom
+    // T10 used for a missing reference band.
+    const livePriceBadge = hasPriceSnapshot(rec) ? '' :
+      '<div><span class="pill pill-muted" style="font-size:10px;" title="รายการนี้บันทึกก่อน T11 หรือไม่มีข้อมูลราคา ณ วันที่นับ — มูลค่านี้อ้างอิงราคาปัจจุบันของสินค้า ไม่ใช่ราคาตอนนับ">ราคาปัจจุบัน — ยังไม่ได้ตรึง</span></div>';
     return `<tr>
       <td class="num nowrap">${thaiMonthLabel(month)}</td>
       <td class="nowrap">${escapeHtml(storeLabel(storeCode))}</td>
@@ -3414,7 +3455,7 @@ function renderAdminDataTable(rows){
       <td class="desc"><div>${escapeHtml(item.desc)}</div><div class="code">${escapeHtml(item.code)}</div></td>
       <td class="nowrap">${fieldVals}</td>
       <td class="text-right num">${fmtNum(total,2)}</td>
-      <td class="text-right num">${fmtMoney(amount)}</td>
+      <td class="text-right num">${fmtMoney(amount)}${livePriceBadge}</td>
       <td class="nowrap">
         <button class="btn btn-secondary btn-sm" data-edit="${idx}">แก้ไข</button>
         <button class="btn btn-danger btn-sm" data-del="${idx}">ลบ</button>
@@ -3483,7 +3524,13 @@ async function saveEditedRecord(idx){
   const ovQty = ovNorm ? ovNorm.qty : 0, ovSub = ovNorm ? ovNorm.subunit_qty : 0;
   const nvQty = parseFloat(document.getElementById('editField_qty').value) || 0;
   const nvSub = parseFloat(document.getElementById('editField_subunit_qty').value) || 0;
-  const newRec = { qty: nvQty, subunit_qty: nvSub, counted_at: Date.now() };
+  // T11/pre-existing fix: spread the existing record instead of rebuilding it from scratch —
+  // rebuilding silently dropped T2's confirmedBy/confirmedAt/flagReason on every admin edit
+  // (wiping the outlier-confirmation audit trail) and would drop price_at_count/pack_at_count
+  // the same way. Carry the snapshot forward, never re-stamp: an admin correcting a past
+  // month's quantity must not silently re-price that month at today's rate. A row with no
+  // snapshot stays un-snapshotted rather than being handed a fabricated one.
+  const newRec = { ...rec, qty: nvQty, subunit_qty: nvSub, counted_at: Date.now() };
   if(nvQty !== ovQty) changes.push({ itemCode:item.code, itemDesc:item.desc, field:'qty', oldVal:ovQty, newVal:nvQty });
   if(nvSub !== ovSub) changes.push({ itemCode:item.code, itemDesc:item.desc, field:'subunit_qty', oldVal:ovSub, newVal:nvSub });
 
@@ -3666,7 +3713,8 @@ function openItemModal(code){
     </div>
     <div class="form-row">
       <div class="form-group flex-1"><label>ราคา (บาท)</label>
-        <input type="number" step="any" id="itPrice" value="${isEdit ? item.price : 0}"></div>
+        <input type="number" step="any" id="itPrice" value="${isEdit ? item.price : 0}">
+        ${isEdit ? '<div class="text-faint" style="font-size:10.5px;margin-top:4px;">เดือนที่มีราคาตรึงไว้แล้ว (T11) จะไม่เปลี่ยน — เดือนที่ยังไม่มีการตรึงราคาจะขยับตามราคาใหม่นี้ทันที</div>' : ''}</div>
       <div class="form-group flex-1"><label>หน่วยรับ (UOM รับ)</label>
         <input type="text" id="itUomRec" value="${isEdit ? escapeHtml(item.uomRec||'') : ''}"></div>
     </div>
@@ -3696,6 +3744,13 @@ async function saveItem(isEdit, oldCode){
 
   if(!code || !desc){ toast('กรุณากรอกรหัสสินค้าและชื่อรายการ', 'error'); return; }
   if(!isEdit && ITEM_MAP[cat][code]){ toast('รหัสสินค้านี้มีอยู่แล้วในหมวดนี้', 'error'); return; }
+
+  // T11: this is the screen where a live-price restatement actually originates — flag it
+  // in the confirmation path itself, not just leave it to be discovered later on the
+  // dashboard's livePriceNoteHtml() line.
+  const priorItem = isEdit ? ITEM_MAP[cat][code] : null;
+  const newPrice = parseFloat(document.getElementById('itPrice').value) || 0;
+  const priceChanged = isEdit && priorItem && Number(priorItem.price) !== newPrice;
 
   const newItem = {
     code,
@@ -3728,7 +3783,12 @@ async function saveItem(isEdit, oldCode){
     ITEM_MAP[cat][code] = newItem;
 
     closeModal();
-    toast(isEdit ? 'แก้ไขรายการเรียบร้อย' : 'เพิ่มรายการเรียบร้อย', 'success');
+    toast(
+      priceChanged
+        ? 'แก้ไขรายการเรียบร้อย — เดือนที่ตรึงราคาแล้วไม่เปลี่ยน เดือนที่ยังไม่ตรึงจะขยับตามราคาใหม่'
+        : (isEdit ? 'แก้ไขรายการเรียบร้อย' : 'เพิ่มรายการเรียบร้อย'),
+      'success'
+    );
     await renderAdminItems();
   }catch(err){
     console.error(err);
@@ -4347,6 +4407,21 @@ function coverageNoteHtml(r){
   </div>`;
 }
 
+/* T11: how many of this month's rows are still floating on the live item master
+   instead of a count-time snapshot. Same placement rule as T10's coverage note —
+   belongs next to the numbers it qualifies, not buried, and renders even when 0
+   so "0 floating" is a stated fact rather than an absence of one. */
+function livePriceNoteHtml(countedRows, livePriceRows){
+  if(!countedRows) return '';
+  const pct = Math.round((livePriceRows / countedRows) * 100);
+  const tone = livePriceRows>0 ? 'var(--warning)' : 'var(--text-faint)';
+  return `<div class="card mt-16" style="padding:9px 15px;font-size:11.5px;color:var(--text-faint);line-height:1.6;">
+    <span style="color:${tone};font-weight:700;">${fmtNum(livePriceRows)} แถวยังลอยตามราคาปัจจุบัน</span>
+    จากทั้งหมด ${fmtNum(countedRows)} แถวในเดือนนี้ (${pct}%) — บันทึกก่อนราคาถูกตรึง ณ วันที่นับ (T11)
+    <div style="color:var(--text-faint);margin-top:2px;">มูลค่าของแถวเหล่านี้จะเปลี่ยนถ้าราคาตั้งต้นของสินค้าถูกแก้ในภายหลัง — ไม่ใช่ความผิดพลาด แค่ยังไม่ได้ตรึงราคา</div>
+  </div>`;
+}
+
 function exceptionQueueCardHtml(exceptions, month, show, coverageStats){
   if(!show) return '';
   if(!exceptions.length){
@@ -4394,6 +4469,9 @@ async function computeCategorySums(month, storeFilter, isAdmin){
   const key = month.replace('-','_');
   const countableStores = STORES_DATA.filter(s=>isCountableAt(s, month));
   const countableUsernames = new Set(countableStores.map(s=>s.username));
+  // T11: counted in the same pass sums[] already runs — no extra Firebase read.
+  // FRESH/TRANSFER rows only, matching sums' own scope (NONFRESH is skipped below).
+  let countedRows = 0, livePriceRows = 0;
 
   if(isAdmin && storeFilter === 'ALL'){
     const data = await dbGetOnce(`counts/${key}`);
@@ -4415,6 +4493,8 @@ async function computeCategorySums(month, storeFilter, isAdmin){
             const amt = recordAmount(item, r);
             sums[cat] += amt;
             storeTotal += amt;
+            countedRows++;
+            if(!hasPriceSnapshot(r)) livePriceRows++;
           });
         });
         if(storeHasData){
@@ -4461,12 +4541,12 @@ async function computeCategorySums(month, storeFilter, isAdmin){
   submittedStores.sort((a,b)=> (Number(a.locNo)||9999) - (Number(b.locNo)||9999));
   notSubmittedStores.sort((a,b)=> (Number(a.locNo)||9999) - (Number(b.locNo)||9999));
 
-  return { sums, storeCount: storesSeen.size, submittedStores, notSubmittedStores, totalCountableStores: countableStores.length };
+  return { sums, storeCount: storesSeen.size, submittedStores, notSubmittedStores, totalCountableStores: countableStores.length, countedRows, livePriceRows };
 }
 
 function renderDashboardResult(result, isAdmin, storeFilter){
   const bodyEl = document.getElementById('dashBody');
-  const { sums, storeCount, submittedStores, notSubmittedStores, totalCountableStores } = result;
+  const { sums, storeCount, submittedStores, notSubmittedStores, totalCountableStores, countedRows, livePriceRows } = result;
   const freshValue = sums.FRESH;
   const showStoreBreakdown = isAdmin && storeFilter === 'ALL';
 
@@ -4632,6 +4712,8 @@ function renderDashboardResult(result, isAdmin, storeFilter){
     </div>
 
     ${exceptionQueueCardHtml(DASH_EXCEPTIONS, DASH_MONTH, showStoreBreakdown, DASH_OUTLIER_RESULT)}
+
+    ${showStoreBreakdown ? livePriceNoteHtml(countedRows, livePriceRows) : ''}
 
     ${storeBreakdownSection}
   `;
