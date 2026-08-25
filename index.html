@@ -1083,7 +1083,7 @@ function scopedPath(path){ return DB_ROOT ? `${DB_ROOT}/${path}` : path; }
 
 /* ════ OUTLIER GUARD (T2) ════ — single tunable threshold, never auto-rejects,
    only requires an explicit confirmation before save. See computeOutlierFlag(). */
-const OUTLIER_FACTOR = 10;
+const OUTLIER_FACTOR = 2; // lowered 10x -> 2x per project owner decision (call, 25 Aug 2026); see HANDOFF.md "Follow-up call, 25 Aug 2026"
 
 
 /* ===================== js/utils.js ===================== */
