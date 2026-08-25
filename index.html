@@ -1005,11 +1005,12 @@ const STORES_DATA_RAW = [{"locNo":"1","name":"บมจ.ซีพี แอ็�
    never rewrite a past month's completion numbers. */
 const LOCATION_TYPE_OVERRIDE = { '806': 'VIRTUAL' };
 /* 528/801/804 sit near other Siam Frozen / FC codes but classify as ordinary STORE by name.
-   Q1 (Store Ops) was DECIDED 25 Aug 2026: keep them counted. This is now settled
-   configuration, not a pending question — do not re-raise without a new instruction
-   from the project owner. See HANDOFF.md "Decisions closed on 25 Aug 2026". */
-const SIAM_FROZEN_ADJACENT_CODES = ['528', '801', '804'];
-const EXCLUDE_SIAM_FROZEN_ADJACENT = false;
+   Q1 (Store Ops) was decided 25 Aug 2026 as "keep all three counted" — that decision
+   was superseded the same day on a follow-up call: 801/804 are now excluded, 528 is
+   deliberately retained. A single all-or-nothing flag can no longer express this split,
+   since the three codes no longer move together, so the flag is gone — membership in
+   this array is the decision. See HANDOFF.md "Decisions closed on 25 Aug 2026". */
+const EXCLUDED_STORE_CODES = ['801', '804'];
 
 function classifyLocationType(locNo, name) {
   if (LOCATION_TYPE_OVERRIDE[String(locNo)]) return LOCATION_TYPE_OVERRIDE[String(locNo)];
@@ -1035,7 +1036,7 @@ function normalizeLocation(s) {
 function isCountableAt(loc, ym) {
   if (!loc) return false;
   if (loc.locationType !== 'STORE') return false;
-  if (EXCLUDE_SIAM_FROZEN_ADJACENT && SIAM_FROZEN_ADJACENT_CODES.includes(String(loc.locNo))) return false;
+  if (EXCLUDED_STORE_CODES.includes(String(loc.locNo))) return false;
   if (loc.effectiveFrom && ym < loc.effectiveFrom) return false;
   if (loc.effectiveTo && ym > loc.effectiveTo) return false;
   return true;

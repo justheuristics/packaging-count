@@ -106,10 +106,11 @@ beyond the raw pattern match:
   its own name — this **contradicts** the original plan doc's listing of it
   as FC. Trusted the name.
 
-`528`/`801`/`804` classify as STORE by name and stay classified-but-not-
-excluded pending open question Q1, behind `EXCLUDE_SIAM_FROZEN_ADJACENT`
-(currently `false`) — flip that constant, not the classifier, once Q1
-answers.
+`528`/`801`/`804` classify as STORE by name. At T4 time this stayed
+classified-but-not-excluded pending open question Q1, behind
+`EXCLUDE_SIAM_FROZEN_ADJACENT`. **Superseded 25 Aug 2026** — see "Follow-up
+call, 25 Aug 2026" below: 801/804 are now excluded via `EXCLUDED_STORE_CODES`,
+528 stays counted, and the flag no longer exists.
 
 `isCountableAt(loc, ym)` — same shape and semantics as bakery's — applied to
 `loadOverviewStats()` and `computeCategorySums()`/`renderDashboardResult()`.
@@ -273,9 +274,11 @@ T7, T10 and T11 (items 1–4 predate T10/T11; items 5–8 are their own):
    VIRTUAL).
 2. Loc `402` classifies DC by its own name, **contradicting** the original
    plan doc's FC listing — trust the name, as flagged in the T4 PR.
-3. `528`/`801`/`804` stay classified-but-not-excluded pending Q1, per the
-   original plan — the config constant (`EXCLUDE_SIAM_FROZEN_ADJACENT`) is in
-   place and defaults to not excluding them.
+3. `528`/`801`/`804` stayed classified-but-not-excluded pending Q1 at T4 time,
+   per the original plan, behind the config constant
+   (`EXCLUDE_SIAM_FROZEN_ADJACENT`, defaulting to not excluding them).
+   **Superseded 25 Aug 2026** — see "Follow-up call, 25 Aug 2026" below:
+   801/804 now excluded, 528 retained, flag replaced by `EXCLUDED_STORE_CODES`.
 4. `STORES_DATA` remains a **hardcoded source array**, never Firebase-backed
    — confirmed again while building T4/T5, nothing changed here from what
    T1 already established.
@@ -307,9 +310,11 @@ the project owner on 25 Aug 2026.** They are recorded rather than deleted so the
 reasoning survives. A future session should not stop on any of them, and should
 not reopen them without a new instruction from the project owner.
 
-- **Q1 — DECIDED: keep 528 / 801 / 804 counted.** `EXCLUDE_SIAM_FROZEN_ADJACENT`
-  stays `false`; this is now settled configuration, not a pending question — see
-  the comment above the constant in `index.html`.
+- **Q1 — DECIDED (25 Aug 2026, morning): keep 528 / 801 / 804 counted.**
+  `EXCLUDE_SIAM_FROZEN_ADJACENT` stayed `false`. **Superseded the same day** on
+  a follow-up call — see "Follow-up call, 25 Aug 2026" below. Recorded here
+  rather than deleted so the reasoning trail (and the fact that this was a
+  same-day reversal, not new information arriving later) survives.
 - **Q3 — DECIDED: snapshot the price onto the entry at save time.** History
   freezes at count-time prices. **Implemented by T11** (see its "What's done"
   entry above for the field shape and the no-backfill rule). Records saved from
@@ -325,6 +330,42 @@ not reopen them without a new instruction from the project owner.
   cannot upload is an admin logging in as that store, which the audit trail
   will attribute to the store, not to the admin. That is accepted for now. It
   is a known limitation of the decision, not an oversight in it.
+
+## Follow-up call, 25 Aug 2026 — Q1 revisited + outlier threshold lowered
+
+A second call the same day (25 Aug 2026) revisited Q1 and made one further
+change. Both are packaging-only.
+
+**Q1 revisited — 801/804 now excluded, 528 retained.** The morning's "keep all
+three counted" decision (see Q1 above) didn't survive the day. 801 and 804 are
+now excluded from counting; 528 stays in. The prior code couldn't express that
+split — one boolean (`EXCLUDE_SIAM_FROZEN_ADJACENT`) gated one three-code array,
+which only works while all three move together. Since they no longer do, the
+flag is gone: `EXCLUDED_STORE_CODES = ['801', '804']`, tested directly in
+`isCountableAt()`. Same effect as T4's DC/FC/FROZEN exclusion — not counted
+toward completion, dashboard sums or the store-status export — 801/804 remain
+visible in admin dropdowns/logs and can still log in and save, exactly as
+DC/FC/FROZEN locations do today.
+
+`bakery-count` has the same three store codes (528, 801, 804 — แจ้งวัฒนะ528,
+แจ้งวัฒนะ801, บางบอน804), which the naming suggests are the same physical
+locations as packaging's. **This exclusion does not apply to bakery.** Scoped
+to packaging only, per this call. Bakery has no equivalent exclusion mechanism
+today (all locations are `locationType: 'STORE'`; see bakery's own T4 comment
+in its `app.js`), so matching this there would need its own decision and its
+own ticket, not a constant flip.
+
+**`OUTLIER_FACTOR` lowered 10× → 2×**, per project owner decision (call, 25 Aug
+2026), to catch anomalies earlier. Known trade-off, flagged at the time and not
+yet resolved: at 2× the guard will fire on ordinary variance — seasonal swings,
+delivery timing around month-end — far more often than at 10×, which risks
+people learning to tick through the confirmation and dulling the control on the
+rows where it matters. Watch for this once live; if confirm-rate climbs,
+consider a two-tier version (warn at 2×, hard-confirm at a higher threshold)
+rather than reverting outright. This paragraph is the record, not a
+recommendation to act on yet — the threshold stays at 2× as decided. Same
+change made in `bakery-count` the same day, in that repo's own session — see
+that repo's `HANDOFF.md` for its mirror of this note.
 
 ## What still blocks T8/T9
 
