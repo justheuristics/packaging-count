@@ -262,6 +262,66 @@ and confirmed the captured record carried `price_at_count`/`pack_at_count` equal
 the live master at save time, `_meta` present, and no other paths touched — then
 restored the stub. No production write; `DB_ROOT` stayed `''` throughout.
 
+### Incident — save handler bound directly to the click Event (fixed 30 Aug 2026)
+
+Not a planned ticket — a regression discovered live: store-side saves silently
+did nothing from 13 Aug 2026 through 30 Aug 2026, so **`counts/2026_08` was empty
+network-wide** for the entire active month until this fix. `counts/2026_07` (130+
+stores) confirms saves worked before T2 landed.
+
+**Root cause.** `renderEntryView()` wired the save button with
+`addEventListener('click', saveCategory)` back on 29 Jul 2026, when `saveCategory`
+took no arguments. T2 (13 Aug 2026) added a `confirmedFlags` parameter to
+`saveCategory()` but never updated this call site — so every click handed
+`saveCategory` the click `Event` object as `confirmedFlags` instead. Two
+consequences, both silent to the store: `(confirmedFlags||[]).forEach(...)` inside
+`saveCategory()` threw `TypeError: forEach is not a function` **before** the
+function's own `try/catch` (which only wraps the actual `dbUpdate()` write), so the
+error surfaced only as an unhandled promise rejection in the console — no toast,
+no signal to the person clicking Save. Separately, a truthy `Event` made
+`!confirmedFlags` evaluate `false`, so the T2 outlier-confirm modal never fired
+from a real click either — it has never once shown to a store user in production.
+
+**Fix.** `renderEntryView()` now wires `() => saveCategory()` instead of the bare
+function reference. `saveCategory()` itself also now coerces its argument —
+`confirmedFlags = Array.isArray(confirmedFlags) ? confirmedFlags : null` — so a
+future re-wiring mistake of the same shape degrades to re-showing the outlier
+modal rather than crashing and losing writes again.
+
+**Verified without a production write**, same technique as T11: stubbed
+`dbUpdate` in a live session (served via `python3 -m http.server`, not `file://`)
+to capture its payload instead of sending it, logged in as `store001`, typed a
+real value, clicked Save through the actual UI. No `TypeError`, the captured
+payload matched `counts/2026_08/store001/FRESH/{code}` with the right
+`price_at_count`/`pack_at_count`/`counted_at`, and the success toast fired
+correctly. Stub restored, no production write. `DB_ROOT` stayed `''` throughout.
+
+**Not investigated / not in scope for this fix, flagged for the project owner:**
+- The August data loss itself is not recoverable by this fix — it only prevents
+  the failure going forward. Every store that "saved" in August needs to be told
+  to re-enter their counts.
+- Two other production Firebase nodes return `PERMISSION_DENIED` under the real
+  (non-`demo`) root: `stats/` and `dashboards/`/`exceptions/` (`stats/2026_08/itemMedian`
+  observed 401 during this investigation). This is a **separate, likely
+  pre-existing** rules gap — unrelated to the click-handler bug above, but it does
+  mean `ITEM_MEDIAN` is currently always empty, so T2's outlier guard only ever
+  runs its qty-vs-prior-month check, never the value-vs-network-median one, until
+  that's resolved.
+- `dbUpdate()`'s `PERMISSION_DENIED` fallback (guardrail 1) returns silently with
+  no signal to the caller, unlike `dbSet()` which returns a boolean specifically so
+  callers can detect a fallback. `saveCategory()` doesn't check anything from
+  `dbUpdate()`, so if `counts/` writes were ever denied in production the same
+  "success toast, nothing saved" failure mode would recur through a different path
+  than the one fixed here. This fix's own verification deliberately stubbed
+  `dbUpdate()` rather than let it reach Firebase (guardrail 1, no real round-trip
+  against `demo/`), so it confirms the click-to-`dbUpdate` path is intact and the
+  payload shape is correct, **not** that a real `counts/` write currently succeeds
+  in production — only `counts/` reads were confirmed live (200, via a plain
+  unauthenticated GET). Given `stats/`/`dashboards/`/`exceptions/` are already
+  401 under rules nobody here changed, a real write should be spot-checked before
+  assuming it's fine. Latent single point of failure either way — worth its own
+  ticket.
+
 ## Departures from the original plan doc
 
 These were verified against actual code/data while implementing T1, T2, T4, T5,
