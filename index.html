@@ -1938,7 +1938,13 @@ async function renderEntryView(){
     });
   });
 
-  document.getElementById('saveEntryBtn').addEventListener('click', saveCategory);
+  // saveCategory() takes confirmedFlags — it must NOT be passed straight to addEventListener,
+  // which would hand it the click Event as that argument. That is exactly what happened between
+  // 13 Aug 2026 (T2 added the parameter) and this fix: every store-side save threw
+  // "(confirmedFlags||[]).forEach is not a function" before reaching dbUpdate, and the outlier
+  // modal never fired because a truthy Event made `!confirmedFlags` false. August 2026 recorded
+  // zero counts network-wide as a result. Keep the arrow wrapper.
+  document.getElementById('saveEntryBtn').addEventListener('click', () => saveCategory());
   document.getElementById('clearEntryBtn').addEventListener('click', confirmClearCategory);
   document.getElementById('exportTemplateBtn').addEventListener('click', exportEntryTemplate);
 
@@ -2464,6 +2470,13 @@ async function confirmOutliersAndSave(){
 }
 
 async function saveCategory(confirmedFlags){
+  // Defensive: a bare `addEventListener('click', saveCategory)` would hand this the click
+  // Event, not confirmedFlags — that exact mistake shipped 13 Aug 2026 - 30 Aug 2026 and
+  // dropped every store-side save network-wide (see the call site comment on saveEntryBtn).
+  // Coerce anything that isn't a real flags array back to "not yet confirmed" instead of
+  // crashing, so a future re-wiring mistake degrades to re-showing the outlier modal rather
+  // than silently losing writes again.
+  confirmedFlags = Array.isArray(confirmedFlags) ? confirmedFlags : null;
   // ── CONCURRENCY GUARD: ป้องกันกด Save ซ้ำหรือ double-tap บนมือถือ ──
   if(SAVE_IN_PROGRESS){
     toast('กำลังบันทึกอยู่ กรุณารอสักครู่...', 'default');
