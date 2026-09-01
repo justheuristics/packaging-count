@@ -369,6 +369,28 @@ with the entry. Since it has zero history, nobody could have been using it to
 submit counts — only someone using it purely to log in and look around would
 be affected, same tradeoff `09853d0` made for its 36 locations.
 
+### Incident — removed store 112 (บางปู), never opened (30 Aug 2026)
+
+Same situation and same mechanism as store 302 above, requested separately by
+the project owner. Confirmed reason: never opened / listed in error. Verified
+zero footprint against production Firebase before removing: `null` in
+`counts/` for `store112` across all 7 month keys, `null` presence, **0**
+`logs/` mentions of `store112` vs. **10** for neighboring `store111` and
+**6** for `store113` as controls, no `112` key in
+`store_reference_band_packaging.json`.
+
+Same single-entry hard delete from `STORES_DATA_RAW` (between `111` and
+`113`), same reasoning for not using `EXCLUDED_STORE_CODES` or `effectiveTo`
+— see the store 302 entry above, which this one doesn't repeat. No other code
+touched. `DB_ROOT` stayed `''`; no production write.
+
+Verified locally: `STORES_DATA.length` 171→170, `isCountableAt` count
+169→168 (both also confirmed directly in the admin dashboard's own UI: the
+store-filter dropdown read "170 สาขา" and the completeness stat read "168
+สาขา" immediately after the change, from a real rendered page rather than a
+console query), `getStoreByCode('store112')` → `undefined`, login as
+`store112`/`welcome1` rejected through the real UI, no new console errors.
+
 ## Departures from the original plan doc
 
 These were verified against actual code/data while implementing T1, T2, T4, T5,
