@@ -322,6 +322,53 @@ correctly. Stub restored, no production write. `DB_ROOT` stayed `''` throughout.
   assuming it's fine. Latent single point of failure either way — worth its own
   ticket.
 
+### Incident — removed store 302 (ทองหล่อ), never opened (30 Aug 2026)
+
+Not a planned ticket. Project owner requested removal of `store302` (`บมจ.ซีพี
+แอ็กซ์ตร้า สาขาทองหล่อ 302`) — confirmed reason: **never opened / listed in
+error**, not a store that closed after operating. That distinction matters
+because this repo has three different removal mechanisms (hard delete from
+`STORES_DATA_RAW`, `EXCLUDED_STORE_CODES` membership, or T4's date-effective
+`effectiveTo` closure) and only one is correct per reason — a store that
+genuinely operated and then closed must use `effectiveTo`, per T4's own
+guardrail: *"closing a location today must never rewrite a past month's
+completion numbers."* 302 never operated, so there is no history to protect.
+
+**Verified zero footprint before removing anything** — this is the same
+"hard-delete only when zero historical records" bar `09853d0` (36 non-store
+locations) applied, checked against production Firebase read-only:
+- `counts/` — `null` for `store302` across all 7 month keys present in the
+  database, including the four malformed date-formatted keys alongside the
+  three normal `YYYY_MM` ones (`2026-05-31`, `2026-06-01`, `2026_06`,
+  `2026-06-21`, `2026-06-23`, `2026_07`, `2026_08`).
+- `presence/store302` — `null`.
+- `logs/` (2.0 MB, full scan) — **0** mentions of `store302`, vs. **30** for
+  neighboring `store301` as a control (proof the scan itself is sound).
+- `store_reference_band_packaging.json` (T10 data) — no `302` key.
+
+**Change.** One entry removed from `STORES_DATA_RAW` (the array is a single
+line; this is an exact-string removal of just the `302` object and its
+trailing comma, sitting between `301` and `303`). No other code touched — no
+`LOCATION_TYPE_OVERRIDE`, no `EXCLUDED_STORE_CODES`, no reference-band edit.
+`STORES_DATA` is not Firebase-backed (T1/T4/`09853d0`), so this is a pure
+source-code change; nothing to migrate in production. `DB_ROOT` stayed `''`
+throughout — no writes.
+
+**Verified locally** (served via `python3 -m http.server`, not `file://`):
+`STORES_DATA.length` 172→171, `isCountableAt` count 170→169, `getStoreByCode
+('store302')` → `undefined`, login as `store302`/`welcome1` rejected through
+the real UI ("ชื่อผู้ใช้ หรือ รหัสผ่าน ไม่ถูกต้อง"), admin overview's
+`สาขาทั้งหมด` stat reads 171, `302` absent from the admin log/export store
+dropdown (173 options, includes the two non-store `-- ทุกสาขา --` /
+`-- ระบบ / Admin --` entries), no new console errors (the one pre-existing
+`scanItemMasterIssues` duplicate-item warning is unrelated, seen before this
+change too).
+
+**Consequence, accepted per the reason above:** the `store302` login goes
+with the entry. Since it has zero history, nobody could have been using it to
+submit counts — only someone using it purely to log in and look around would
+be affected, same tradeoff `09853d0` made for its 36 locations.
+
 ## Departures from the original plan doc
 
 These were verified against actual code/data while implementing T1, T2, T4, T5,
