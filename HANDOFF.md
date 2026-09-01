@@ -391,6 +391,47 @@ store-filter dropdown read "170 สาขา" and the completeness stat read "16
 console query), `getStoreByCode('store112')` → `undefined`, login as
 `store112`/`welcome1` rejected through the real UI, no new console errors.
 
+### Incident — removed store 528 (แจ้งวัฒนะ), never opened (30 Aug 2026)
+
+**Not the same situation as 302/112 despite the identical mechanism** — 528
+has documented history in this file (see "Follow-up call, 25 Aug 2026" below:
+the project owner explicitly decided that day to keep 528 counted, in
+contrast to excluding 801/804). This removal **reverses that specific call**,
+on a new instruction from the project owner given separately, confirmed
+reason: never opened / listed in error, same as 302/112. Recorded here rather
+than silently folded in because a "closed decision" (CLAUDE.md's phrase)
+about this exact store existed and a future reader checking that section
+needs to know it no longer holds for 528 specifically — 801/804 are
+unaffected and remain excluded exactly as that call decided. A pointer to
+this entry was added directly under that Follow-up call section.
+
+Verified zero footprint against production Firebase before removing, despite
+528 being deliberately kept in the countable set: `null` in `counts/` for
+`store528` across all 7 month keys, `null` presence, **0** `logs/` mentions
+(2.1 MB, full scan — for context, `store801`/`store804` also show 0, which is
+expected since they've been excluded from the entry screen since 25 Aug and
+so is not by itself informative; the load-bearing check is `counts/`, which
+is unconditionally `null`), no `528` key in
+`store_reference_band_packaging.json`.
+
+**Two things changed, not one** — the `STORES_DATA_RAW` entry (between `352`
+and `801`) and the code comment directly above `EXCLUDED_STORE_CODES`, which
+previously said "528 is deliberately retained." Left unedited, that comment
+would describe a store that no longer exists in the array at all. Updated to
+say 528 was removed entirely and that the array only ever applies to 801/804
+now. `EXCLUDED_STORE_CODES` itself is untouched — still `['801', '804']`.
+`DB_ROOT` stayed `''`; no production write.
+
+Verified locally: `STORES_DATA.length` 170→169, `isCountableAt` count
+168→167 — one lower than a same-shape 302/112 removal would produce, because
+528 was actually being counted (not in `EXCLUDED_STORE_CODES`), so losing it
+drops the countable figure too, not just the total. Confirmed directly in the
+admin dashboard's own rendered UI: `สาขาทั้งหมด` read 169. `EXCLUDED_STORE_CODES`
+confirmed still exactly `['801','804']` post-change; `store801` confirmed
+still present and still correctly excluded (`isCountableAt` false).
+`getStoreByCode('store528')` → `undefined`, login as `store528`/`welcome1`
+rejected through the real UI, no new console errors.
+
 ## Departures from the original plan doc
 
 These were verified against actual code/data while implementing T1, T2, T4, T5,
@@ -483,6 +524,14 @@ to packaging only, per this call. Bakery has no equivalent exclusion mechanism
 today (all locations are `locationType: 'STORE'`; see bakery's own T4 comment
 in its `app.js`), so matching this there would need its own decision and its
 own ticket, not a constant flip.
+
+**Superseded 30 Aug 2026 for 528 specifically** — this record stands as
+written above (the record, not something to revise in place), but see the
+"Incident — removed store 528" entry further up this file: the project owner
+had 528 removed from `STORES_DATA_RAW` entirely (never opened / listed in
+error, zero submission history despite this decision to keep it counted).
+801/804 are unaffected and remain exactly as decided here. Scoped to
+packaging only, same as this section — not applied to `bakery-count`.
 
 **`OUTLIER_FACTOR` lowered 10× → 2×**, per project owner decision (call, 25 Aug
 2026), to catch anomalies earlier. Known trade-off, flagged at the time and not
